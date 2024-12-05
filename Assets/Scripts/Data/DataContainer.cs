@@ -32,6 +32,19 @@ namespace Pepemon.Battle
             }
         }
 
+        public Card GetCardById(ulong cardId)
+        {
+            // Call GetCardsTypesByIds but only pass the single cardId in a list
+            var card = GetCardsTypesByIds(new List<ulong> { cardId }).FirstOrDefault();
+
+            if (card == null)
+            {
+                Debug.LogWarning("Card ID not found: " + cardId);
+            }
+
+            return card;
+        }
+
         public IEnumerable<Card> GetCardsTypesByIds(List<ulong> ids)
         {
             foreach (var id in ids)

@@ -18,6 +18,7 @@ MonoBehaviour:
   DisplayName: Witchenry
   CardContentBackdrop: {fileID: 21300000, guid: 767ccc0c36389994f9dd784663975969, type: 3}
   CardContent: {fileID: 21300000, guid: 844ee28403394e34ca63016da96c7433, type: 3}
+  CardBG: {fileID: 21300000, guid: a01bf2faffe98d84d851ea5988c3293b, type: 3}
   Level: 1
   Type: 7
   Weakness: 6

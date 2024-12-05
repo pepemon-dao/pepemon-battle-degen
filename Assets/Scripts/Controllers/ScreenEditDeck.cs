@@ -1,11 +1,15 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Contracts.PepemonCardDeck.abi.ContractDefinition;
+using Pepemon.Battle;
 using Sirenix.OdinInspector;
+using Thirdweb;
 using UnityEngine;
 using UnityEngine.UI;
+using static PepemonCardDeck;
+using static UnityEngine.EventSystems.EventTrigger;
 
 /// <summary>
 /// MonoBehavior for Screen_5_EditDeck
@@ -17,9 +21,25 @@ public class ScreenEditDeck : MonoBehaviour
     [TitleGroup("Component References"), SerializeField] GameObject _mintCardsButton;
     [TitleGroup("Component References"), SerializeField] GameObject _previousScreenButton;
     [TitleGroup("Component References"), SerializeField] GameObject _textLoading;
+    //[TitleGroup("Helpers"), SerializeField] List<Card> ownedDeck; 
+    //[TitleGroup("Helpers"), SerializeField] List<BattleCard> ownedBattleDeck; 
+    //[TitleGroup("Helpers"), SerializeField] List<Card> starterDeck; 
+
+    private Dictionary<ulong, CardMetadata?> metadataLookup = new Dictionary<ulong, CardMetadata?>();
+
     private ulong currentDeckId;
     private ulong battleCard;
-    private Dictionary<ulong, int> supportCards;
+    private IDictionary<ulong, int> supportCards = new Dictionary<ulong, int>();
+    private IDictionary<ulong, int> starterSupportCards = new Dictionary<ulong, int>();
+
+    private Dictionary<ulong, int> ownedCardIds = new Dictionary<ulong, int>();
+    private Dictionary<ulong, int> ownedBattleCardIds = new Dictionary<ulong, int>();
+
+    private bool isLoading = false;
+
+    private bool shouldUpdateTheStarterSupportCardsAfterSave = false;
+
+    private string account = "";
 
     public void Start()
     {
@@ -27,32 +47,238 @@ public class ScreenEditDeck : MonoBehaviour
         _mintCardsButton.GetComponent<Button>().onClick.AddListener(HandleMintCardsButtonClick);
     }
 
-    public async void LoadAllCards(ulong deckId)
+    public void LoadAllCards(ulong deckId, int filter)
     {
+        if (isLoading)
+        {
+            return;
+        }
+        StartCoroutine(LoadAllCardsCoroutine(deckId, filter));
+    }
+
+    private IEnumerator LoadAllCardsCoroutine(ulong deckId, int filter)
+    {
+        isLoading = true;
+        _textLoading.SetActive(true);
+
         var deckDisplayComponent = _deckDisplay.GetComponent<DeckDisplay>();
 
-        _textLoading.SetActive(true);
-        deckDisplayComponent.ClearBattleCardsList();
-        deckDisplayComponent.ClearSupportCardsList();
+        bool loadingNewDeck = false;
 
-        currentDeckId = deckId;
-        var account = Web3Controller.instance.SelectedAccountAddress;
+        if (currentDeckId != deckId)
+        {
+            currentDeckId = deckId;
+            loadingNewDeck = true;
+        }
 
-        // This only returns unused cards
-        var ownedCardIds = await PepemonFactory.GetOwnedCards(account, PepemonFactoryCardCache.CardsIds);
+        account = "";
 
-        battleCard = await PepemonCardDeck.GetBattleCard(deckId);
-        supportCards = new Dictionary<ulong, int>(await PepemonCardDeck.GetAllSupportCards(deckId));
+        // Getting the address from the wallet
+        
+        if (account == "")
+        {
+            var getAddressRequest = ThirdwebManager.Instance.SDK.Wallet.GetAddress();
 
-        deckDisplayComponent.LoadAllBattleCards(ownedCardIds, battleCard);
+            while (!getAddressRequest.IsCompleted)
+            {
+                yield return null;
+            }
+            if (getAddressRequest.IsFaulted)
+            {
+                Debug.LogError(getAddressRequest.Exception);
+            }
+            else
+            {
+                account = getAddressRequest.Result;
+            }
+        }
+
+        supportCards = new OrderedDictionary<ulong, int>();
+        starterSupportCards = new OrderedDictionary<ulong, int>();
+        bool isStarterDeck = false;//deckId == 1234;
+
+        // Handle starter deck case
+        if (isStarterDeck)
+        {
+            // we are not using this system currently and would be on chain - TODO: remove all the connected code to this
+            //SetupStarterDeck(deckDisplayComponent, ownedCardIds, ownedBattleCardIds, loadingNewDeck);
+        }
+        else
+        {
+            /*
+            // This only returns unused cards
+            ownedCardIds = await PepemonFactory.GetOwnedCards(account, PepemonFactoryCardCache.CardsIds.ToList());
+
+            battleCard = await PepemonCardDeck.GetBattleCard(deckId);
+            supportCards = new Dictionary<ulong, int>(await PepemonCardDeck.GetAllSupportCards(deckId));
+
+            */
+            
+
+            
+            if (loadingNewDeck)
+            {
+                DeckDisplay.battleCardId = 0; //safe guards
+                battleCard = 0; //safe guards
+
+                ownedCardIds = new();
+                ownedBattleCardIds = new();
+
+                // Fetch battle card
+                yield return StartCoroutine(PepemonCardDeck.GetBattleCard(deckId, result => battleCard = result));
+
+                // Fetch all support cards
+                yield return StartCoroutine(PepemonCardDeck.GetAllSupportCards(deckId, result => supportCards = result));
+
+                // Fetch owned cards
+                yield return StartCoroutine(PepemonFactory.GetOwnedCards(account, PepemonFactoryCardCache.CardsIds.ToList(), result => ownedCardIds = result));
+
+                starterSupportCards = supportCards;
+
+                var keysToRemove = new List<ulong>();
+
+                foreach (var entry in ownedCardIds)
+                {
+                    if (!metadataLookup.TryGetValue(entry.Key, out var metadata))
+                    {
+                        // Metadata not found in lookup, retrieve it
+                        metadata = PepemonFactoryCardCache.GetMetadata(entry.Key);
+                        if (metadata != null)
+                        {
+                            metadataLookup[entry.Key] = metadata;
+                        }
+                    }
+
+                    bool isBattleCard = metadata.Value.description.Contains("Battle ver");
+                    if (isBattleCard)
+                    {
+                        // Add to ownedBattleCardIds
+                        ownedBattleCardIds.Add(entry.Key, entry.Value);
+
+                        // Mark the key for removal
+                        keysToRemove.Add(entry.Key);
+                    }
+                }
+
+                // Remove the marked keys from ownedCardIds
+                foreach (var key in keysToRemove)
+                {
+                    ownedCardIds.Remove(key);
+                }
+
+            }
+            else
+            {
+                battleCard = deckDisplayComponent.GetSelectedBattleCard();
+                supportCards = deckDisplayComponent.GetSelectedSupportCards();
+            }
+
+            if (!loadingNewDeck)
+            {
+                if (shouldUpdateTheStarterSupportCardsAfterSave)
+                {
+                    starterSupportCards = supportCards;
+                }
+            }
+
+            shouldUpdateTheStarterSupportCardsAfterSave = false;
+
+            
+            if (battleCard == 0)
+            {
+                battleCard = DeckDisplay.battleCardId;
+            }
+        }
+
+        // Set battle card if not set
+        if (DeckDisplay.battleCardId == 0)
+        {
+            DeckDisplay.battleCardId = battleCard;
+        }
+
+        if (loadingNewDeck)
+        {
+            if (FilterController.Instance != null)
+            {
+                FilterController.Instance.ResetFilters();
+            }
+        }
+
+        if (loadingNewDeck)
+        {
+            DeckDisplay.Instance.UnloadPreviousDeck();
+        }
+
+        // Load deck data into the display
+        deckDisplayComponent.ClearMyCardsList();
+        deckDisplayComponent.LoadSelectedCards(battleCard, supportCards);
         deckDisplayComponent.LoadAllSupportCards(ownedCardIds, supportCards);
+        deckDisplayComponent.LoadAllBattleCards(ownedBattleCardIds, battleCard);
+
+        DeckDisplay.Instance.UpdateCardInDeckDisplay(loadingNewDeck);
+
         _textLoading.SetActive(false);
+        isLoading = false;
+    }
+
+    // Helper method for setting up the starter deck
+    /*
+    private void SetupStarterDeck(DeckDisplay deckDisplayComponent, Dictionary<ulong, int> ownedCardIds, Dictionary<ulong, int> ownedBattleCardIds, bool IsLoadingNewDeck)
+    {
+        if (IsLoadingNewDeck)
+        {
+            DeckDisplay.battleCardId = 7;
+        }
+        else
+        {
+            battleCard = deckDisplayComponent.GetSelectedBattleCard();
+            supportCards = deckDisplayComponent.GetSelectedSupportCards();
+        }
+
+        foreach (var card in ownedDeck)
+        {
+            ulong id = (ulong)card.ID;
+            ownedCardIds[id] = ownedCardIds.ContainsKey(id) ? ownedCardIds[id] + 1 : 1;
+        }
+
+        if (!IsLoadingNewDeck)
+        {
+            ownedCardIds = DeductSelectedCardsFromOwned(supportCards, ownedCardIds);
+        }
+
+        foreach (var card in ownedBattleDeck)
+        {
+            int cardId = int.Parse(card.ID);
+            ulong id = (ulong)cardId;
+            if (id != battleCard)
+            {
+                ownedBattleCardIds[id] = ownedBattleCardIds.ContainsKey(id) ? ownedBattleCardIds[id] + 1 : 1;
+            }
+        }
+    }*/
+
+    // Helper method for deducting selected cards from owned cards
+    private Dictionary<ulong, int> DeductSelectedCardsFromOwned(IDictionary<ulong, int> selectedCards, Dictionary<ulong, int> ownedCardIds)
+    {
+        foreach (var card in selectedCards)
+        {
+            if (ownedCardIds.ContainsKey(card.Key))
+            {
+                ownedCardIds[card.Key] -= card.Value;
+                if (ownedCardIds[card.Key] <= 0)
+                {
+                    ownedCardIds.Remove(card.Key);
+                }
+            }
+        }
+
+        return ownedCardIds;
     }
 
     private void setButtonsInteractibleState(bool interactible)
     {
         _saveDeckButton.GetComponent<Button>().interactable = interactible;
-        _previousScreenButton.GetComponent<Button>().interactable = interactible;
+        //_previousScreenButton.GetComponent<Button>().interactable = interactible;
         _mintCardsButton.GetComponent<Button>().interactable = interactible;
     }
 
@@ -62,7 +288,20 @@ public class ScreenEditDeck : MonoBehaviour
         try
         {
             await PepemonCardDeck.MintCards();
-            LoadAllCards(currentDeckId);
+            LoadAllCards(currentDeckId, FilterController.Instance.currentFilter);
+        } 
+        finally
+        {
+            setButtonsInteractibleState(true);
+        }
+    }
+    
+    public void FilterCards(int filter)
+    {
+        setButtonsInteractibleState(false);
+        try
+        {
+            LoadAllCards(currentDeckId, filter);
         } 
         finally
         {
@@ -94,14 +333,20 @@ public class ScreenEditDeck : MonoBehaviour
 
         if (approvalOk)
         {
+            shouldUpdateTheStarterSupportCardsAfterSave = true;
+
             GetSupportCardsDiff(
-                supportCards,
+                starterSupportCards,
                 _deckDisplay.GetComponent<DeckDisplay>().GetSelectedSupportCards(),
                 out var supportCardsToBeAdded,
                 out var supportCardsToBeRemoved);
 
             // TODO: wait for transaction receipt
-            await UpdateSupportCards(supportCardsToBeAdded, supportCardsToBeRemoved);
+            if (supportCardsToBeAdded.Length > 0 ||supportCardsToBeRemoved.Length > 0)
+            {
+                await UpdateSupportCards(supportCardsToBeAdded, supportCardsToBeRemoved);
+            }
+            
             await UpdateBattlecard(_deckDisplay.GetComponent<DeckDisplay>().GetSelectedBattleCard());
         }
 
@@ -199,7 +444,7 @@ public class ScreenEditDeck : MonoBehaviour
         }
     }
 
-    public void GetSupportCardsDiff(Dictionary<ulong, int> oldSupportCards, 
+    public void GetSupportCardsDiff(IDictionary<ulong, int> oldSupportCards, 
                                     Dictionary<ulong, int> newSupportCards,
                                     out SupportCardRequest[] toBeAddedSupportCardRequest, 
                                     out SupportCardRequest[] toBeRemovedSupportCardRequest)

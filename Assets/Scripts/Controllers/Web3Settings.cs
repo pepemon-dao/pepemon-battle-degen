@@ -20,9 +20,13 @@ public class Web3Settings
         public string rpcUrl;
         public string blockExplorerUrl;
         public string pepemonBattleAddress;
+        public string pepemonBattleAbi;
         public string pepemonFactoryAddress;
+        public string pepemonFactoryAbi;
         public string pepemonCardDeckAddress;
+        public string pepemonCardDeckAbi;
         public long pepemonGasLimit;
+        public string pepemonMatchmakerAbi;
         public string[] pepemonMatchmakerAddresses;
     }
 

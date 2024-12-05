@@ -18,6 +18,7 @@ MonoBehaviour:
   DisplayName: Metaphy
   CardContentBackdrop: {fileID: 21300000, guid: 37311f2c3b7e8c346aa64ec2ffd183f6, type: 3}
   CardContent: {fileID: 21300000, guid: e996e435c12c8bf4cb69d1b30c2d1150, type: 3}
+  CardBG: {fileID: 21300000, guid: 3e6344641535fdf4baee93b8722bbf68, type: 3}
   Level: 1
   Type: 8
   Weakness: 9

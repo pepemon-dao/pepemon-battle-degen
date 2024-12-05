@@ -18,6 +18,7 @@ MonoBehaviour:
   DisplayName: Shapu
   CardContentBackdrop: {fileID: 21300000, guid: 9f4590f49ef518d4e90cdeaae22e837e, type: 3}
   CardContent: {fileID: 21300000, guid: e7b74aa810be28f45857af8177afed99, type: 3}
+  CardBG: {fileID: 21300000, guid: 82b8fca82af9d094e8396042b68126b6, type: 3}
   Level: 1
   Type: 9
   Weakness: 10

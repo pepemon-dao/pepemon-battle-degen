@@ -18,6 +18,7 @@ MonoBehaviour:
   DisplayName: Marsher
   CardContentBackdrop: {fileID: 21300000, guid: b7b2187c94cc02443a582c3d7eb416bb, type: 3}
   CardContent: {fileID: 21300000, guid: de86ecb120002b74ba73295bf659c4cf, type: 3}
+  CardBG: {fileID: 21300000, guid: 4921eef12ba139b47a250e0ca4e9c717, type: 3}
   Level: 1
   Type: 8
   Weakness: 9

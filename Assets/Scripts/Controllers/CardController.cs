@@ -14,8 +14,8 @@ public class CardController : MonoBehaviour
     [BoxGroup("Card Components"), SerializeField] private Image _cardBackgroundImage;
     [BoxGroup("Card Components"), SerializeField] private Image _cardStatImage;
     [BoxGroup("Card Components"), SerializeField] private Image _gemImage;
-    [BoxGroup("Card Components"), SerializeField] private Image _glowImage;
     [BoxGroup("Card Components"), SerializeField] private CanvasGroup _cardGlow;
+    [BoxGroup("Card Components"), SerializeField] private Image glow;
 
     [BoxGroup("Card Backdrops"), SerializeField] private Sprite _defenceCardFrame;
     [BoxGroup("Card Backdrops"), SerializeField] private Sprite _specialDefenceCardFrame;
@@ -38,6 +38,9 @@ public class CardController : MonoBehaviour
 
     private Transform _targetPostion;        //the target transform in the layout group this card will lerp to
     private Vector3 _startingTargetPosition = Vector3.zero;  //the position to return to after being highlighted
+
+    private Vector3 _targetScale;
+    private Vector3 _startingScale;
 
     public void PopulateCard(Card card)
     {
@@ -78,14 +81,17 @@ public class CardController : MonoBehaviour
         switch (card.Type)
         {
             case PlayCardType.Defense:
-                _glowImage.color = Color.cyan;
+                glow.color = Color.cyan;
                 break;
             case PlayCardType.SpecialDefense:
-                _glowImage.color = Color.cyan;
+                glow.color = Color.cyan;
                 break;
         }
 
         _cardFrameImage.sprite = card.CardEffectSprite;
+
+        _startingScale = transform.localScale;
+        _targetScale = transform.localScale;
     }
 
     public void SetTargetTransform(Transform _target)
@@ -97,24 +103,17 @@ public class CardController : MonoBehaviour
     /// <summary>
     /// The cards move foward when they are attacking
     /// </summary>
-    public void SetAttackingTransform(int attackIndex)
-    { 
-        if (attackIndex == 1)
-        {
-            _startingTargetPosition = _targetPostion.position;
+    public void SetAttackingTransform(Vector3 to)
+    {
+        _startingTargetPosition = _targetPostion.position;
 
-            _targetPostion.position = new Vector3(_targetPostion.position.x, _targetPostion.position.y - 5f, _targetPostion.position.z - 15f);
-            _cardGlow.DOFade(1, .2f);
-            transform.SetAsLastSibling(); //make sure this card is in front of the bottom cards.
-        }
-        else if (attackIndex == 2)
-        {
-            _startingTargetPosition = _targetPostion.position;
+        _targetPostion.position += to;
+        _cardGlow.DOFade(1, 2f);
+        transform.SetAsLastSibling(); //make sure this card is in front of the bottom cards.
 
-            _targetPostion.position = new Vector3(_targetPostion.position.x, _targetPostion.position.y + 5f, _targetPostion.position.z - 15f);
-            _cardGlow.DOFade(1, .2f);
-            transform.SetAsLastSibling(); //make sure this card is in front of the bottom cards.
-        }
+        _targetScale = _startingScale * 1.1f;
+
+        SFXManager.Instance.SlideSFX();
     }
 
     /// <summary>
@@ -122,11 +121,12 @@ public class CardController : MonoBehaviour
     /// </summary>
     public void ReturnToBaseTransform()
     {
-        _cardGlow.DOFade(0, .2f);
+        _cardGlow.DOFade(0, 1f);
 
         if (_startingTargetPosition != Vector3.zero)
             _targetPostion.position = _startingTargetPosition;
 
+        _targetScale = _startingScale;
     }
 
     void Update()
@@ -134,5 +134,6 @@ public class CardController : MonoBehaviour
         //lerp to target position on UI
 
         transform.position = Vector3.Lerp(transform.position, _targetPostion.position, 5 * Time.deltaTime);
+        transform.localScale = Vector3.Lerp(transform.localScale, _targetScale, 5 * Time.deltaTime);
     }
 }

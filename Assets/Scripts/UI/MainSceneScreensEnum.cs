@@ -16,4 +16,5 @@ public enum MainSceneScreensEnum
     EditDeck = 6,
     WaitForOpponent = 7,
     Leaderboard = 8,
+    Tutorial = 9,
 }

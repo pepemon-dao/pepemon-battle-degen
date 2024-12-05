@@ -18,6 +18,7 @@ MonoBehaviour:
   DisplayName: Toyol
   CardContentBackdrop: {fileID: 21300000, guid: c4f5c62a5014e2648ae6761ec3872633, type: 3}
   CardContent: {fileID: 21300000, guid: 9b7399e4df6dd0c40b20781578d9e355, type: 3}
+  CardBG: {fileID: 21300000, guid: 9bc02b89801ac6d4cbe4261117fb64d5, type: 3}
   Level: 1
   Type: 5
   Weakness: 6

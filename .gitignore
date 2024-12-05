@@ -66,3 +66,6 @@ crashlytics-build.properties\
 
 # Ignore artifacts folder
 artifacts/
+
+# Ignore the build file
+env/dev/Build/WebGL.data

@@ -7,6 +7,7 @@ class SelectionItem : MonoBehaviour
     public UnityEvent onSelected;
     public UnityEvent onDeselected;
 
+
     public void ToggleSelected()
     {
         GetComponentInParent<SelectionGroup>().ToggleSelected(this);

@@ -2,7 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Nethereum.Web3;
+using Pepemon.Battle;
 using Sirenix.OdinInspector;
+using Thirdweb;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -15,7 +17,7 @@ public class DeckListLoader : MonoBehaviour
     [TitleGroup("Deck display options"), SerializeField] bool _deckEditMode;
 
     [ReadOnly] public UnityEvent<ulong> onEditDeck;
-    [ReadOnly] public UnityEvent<ulong> onSelectDeck;
+    [ReadOnly] public UnityEvent<ulong, bool> onSelectDeck;
     private bool loadingInProgress = false;
 
     /// <summary>
@@ -32,27 +34,59 @@ public class DeckListLoader : MonoBehaviour
         loadingInProgress = true;
 
         _loadingMessage.SetActive(true);
-        var loadingMessageLabel = _loadingMessage.GetComponent<Text>();
+        var loadingMessageLabel = _loadingMessage.GetComponent<TMPro.TMP_Text>();
         loadingMessageLabel.text = "Loading decks...";
 
         // destroy before re-creating
         foreach (var deck in _deckList.GetComponentsInChildren<Button>())
         {
-            Destroy(deck.gameObject);
+            if (!deck.name.Contains("StarterDeck"))
+                Destroy(deck.gameObject);
         }
+        
+        string account = "";
 
+        try
+        {
+            account = await ThirdwebManager.Instance.SDK.Wallet.GetAddress();
+        } catch (System.Exception ex)
+        {
+            Debug.LogError(ex);
+        }
         // should not happen, but if it happens then it won't crash the game
-        var account = Web3Controller.instance.SelectedAccountAddress;
         if (string.IsNullOrEmpty(account))
         {
             loadingMessageLabel.text = "Error: No account selected";
-            return;
+            //return;
         }
 
         // load all decks
-        var decks = await PepemonCardDeck.GetPlayerDecks(Web3Controller.instance.SelectedAccountAddress);
+        List<ulong> decks = new List<ulong>();
+        if (!string.IsNullOrEmpty(account))
+        {
+            decks = await PepemonCardDeck.GetPlayerDecks(account);
+        }
 
         var loadingTasks = new List<UniTask>();
+        if (MainMenuController.claimedStarterDeck)
+        {
+            ulong deckId = 1234;
+
+            var deckInstance = Instantiate(_deckPrefab);
+
+            // show or hide the edit mode
+            deckInstance.GetComponent<DeckController>().DisplayDeckEditMode = _deckEditMode;
+            deckInstance.GetComponent<DeckController>().onEditButtonClicked.AddListener(
+                delegate {
+                    onEditDeck?.Invoke(deckId);
+                });
+            deckInstance.GetComponent<DeckController>().onSelectButtonClicked.AddListener(
+                delegate {
+                    onSelectDeck?.Invoke(deckId, false);
+                });
+
+            await LoadAndAddDeck(deckInstance, deckId);
+        }
 
         decks.ForEach((deckId) => {
             var deckInstance = Instantiate(_deckPrefab);
@@ -65,13 +99,12 @@ public class DeckListLoader : MonoBehaviour
                 });
             deckInstance.GetComponent<DeckController>().onSelectButtonClicked.AddListener(
                 delegate {
-                    onSelectDeck?.Invoke(deckId);
+                    onSelectDeck?.Invoke(deckId, false);
                 });
 
             // this should set each deck detail in parallel
             loadingTasks.Add(LoadAndAddDeck(deckInstance, deckId));
         });
-
         await UniTask.WhenAll(loadingTasks);
         _loadingMessage.SetActive(false);
         loadingInProgress = false;

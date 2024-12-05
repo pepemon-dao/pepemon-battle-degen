@@ -14,10 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UID: 9a77f825-f403-4b84-8b89-2ee7ca22d615
   DisplayIcon: {fileID: 0}
-  ID: 
+  ID: 11
   DisplayName: Zaptry
-  CardContentBackdrop: {fileID: 21300000, guid: e71cebf0cf3ed96449cae0eed230bf92, type: 3}
+  CardContentBackdrop: {fileID: 0}
   CardContent: {fileID: 21300000, guid: f28798e41df46134695100edb2358ff3, type: 3}
+  CardBG: {fileID: 21300000, guid: c9bbfa23bee9235488520cbd5e43f94a, type: 3}
   Level: 1
   Type: 2
   Weakness: 5

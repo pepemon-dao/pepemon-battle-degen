@@ -34,6 +34,11 @@ namespace Pepemon.Battle
 
         [BoxGroup("General")]
         [VerticalGroup("General/Left/Right")]
+        [LabelWidth(200)]
+        public Sprite CardBG;
+
+        [BoxGroup("General")]
+        [VerticalGroup("General/Left/Right")]
         [LabelWidth(80)]
         public string Level = "1";
 

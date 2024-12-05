@@ -18,6 +18,7 @@ MonoBehaviour:
   DisplayName: Moltry
   CardContentBackdrop: {fileID: 21300000, guid: 22bcdada3e855924bab4c21a2022a73c, type: 3}
   CardContent: {fileID: 21300000, guid: 7943a6531fbdcd245b71916878c56b28, type: 3}
+  CardBG: {fileID: 21300000, guid: c00978c5966c33146836236f6b6e0552, type: 3}
   Level: 1
   Type: 1
   Weakness: 10

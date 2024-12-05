@@ -18,6 +18,7 @@ MonoBehaviour:
   DisplayName: Unifairy
   CardContentBackdrop: {fileID: 21300000, guid: f8e848254a5ae3d419947f8bd5a4053e, type: 3}
   CardContent: {fileID: 21300000, guid: 5a1eaeae308d5b84ba85956663702fac, type: 3}
+  CardBG: {fileID: 21300000, guid: 0d3977d6fab14234586bf42865d660d7, type: 3}
   Level: 1
   Type: 8
   Weakness: 1

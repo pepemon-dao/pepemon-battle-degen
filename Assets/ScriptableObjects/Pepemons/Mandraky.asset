@@ -18,15 +18,16 @@ MonoBehaviour:
   DisplayName: Mandraky
   CardContentBackdrop: {fileID: 21300000, guid: b381c26da98055444afe5e55e634d91a, type: 3}
   CardContent: {fileID: 21300000, guid: a0461aa653fe6fe48936ca35b8048a3b, type: 3}
+  CardBG: {fileID: 21300000, guid: 180ed81d3cf8d9c41ab9de24fefd6517, type: 3}
   Level: 1
   Type: 2
   Weakness: 3
   Resistence: 0
   Rarity: 0
-  HealthPoints: 39
+  HealthPoints: 20
   Speed: 11
   Intelligence: 4
-  Attack: 1
-  Defense: 3
-  SAttack: 22
-  SDeffense: 19
+  Attack: 5
+  Defense: 6
+  SAttack: 7
+  SDeffense: 10

@@ -21,6 +21,7 @@ jobs:
     concurrency: ci-${{ github.ref }}
 
     steps:
+      
       - name: Cleanup Docker
         run: |
           docker system prune -af
@@ -31,13 +32,14 @@ jobs:
         with:
           lfs: true
     
-      # Cache
-      - uses: actions/cache@v3
+      # Cache Restore
+      - uses: actions/cache/restore@v4
+        id: test-cache-restore
         with:
           path: Library
-          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          key: test-cache-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
           restore-keys: |
-            Library-
+            test-cache-
 
       # Test
       - name: Run tests
@@ -49,9 +51,17 @@ jobs:
         with:
           unityVersion: 2021.3.12f1
           githubToken: ${{ secrets.GITHUB_TOKEN }}
+          
+      # Cache Save
+      - uses: actions/cache/save@v4
+        if: github.ref == 'refs/heads/main' && steps.test-cache-restore.outputs.cache-hit != 'true'
+        with:
+          path: Library
+          key: ${{ steps.test-cache-restore.outputs.cache-primary-key }}
 
       # Build
       - name: Build project
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/release' || github.ref == 'refs/heads/staging'
         uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -60,6 +70,7 @@ jobs:
         with:
           unityVersion: 2021.3.12f1
           targetPlatform: WebGL
+          allowDirtyBuild: true
 
       # Output
       - uses: actions/upload-artifact@v3

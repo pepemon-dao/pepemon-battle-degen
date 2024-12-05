@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections;
 using Pepemon.Battle;
 using static UnityEngine.ParticleSystem;
+using System.Reflection;
 // Handles displaying game state
 public class UIController : MonoBehaviour
 {
@@ -15,6 +16,7 @@ public class UIController : MonoBehaviour
     [TitleGroup("Component References"), SerializeField] Sprite _attackIcon;
     [TitleGroup("Component References"), SerializeField] TextMeshProUGUI _player1Health;
     [TitleGroup("Component References"), SerializeField] TextMeshProUGUI _player2Health;
+    [TitleGroup("Component References"), SerializeField] VersusScreenDisplay _versusScreen;
 
     [BoxGroup("Sidebar")]
     [SerializeField, BoxGroup("Sidebar")] TextMeshProUGUI _roundCount;
@@ -45,16 +47,32 @@ public class UIController : MonoBehaviour
     Player _player2;
     Transform _sidebar;
 
+    private Coroutine routine;
+
     public void InitialiseGame(Player player1, Player player2)
     {
         _player1 = player1;
         _player2 = player2;
-        _sidebar = _board.Find("Sidebar");
+        _sidebar = GameObject.Find("Sidebar").transform;
 
         UpdateUI();
 
         _index1DeckCount.text = player1.PlayerDeck.GetDeck().Count + "cards";
         _index2DeckCount.text = player2.PlayerDeck.GetDeck().Count + "cards";
+
+        SetVersusScreen(player1, player2);
+    }
+
+    private void SetVersusScreen(Player player1, Player player2)
+    {
+        Sprite imgR = player2.PlayerPepemon.CardContent;
+        Sprite imgB = player1.PlayerPepemon.CardContent;
+        Sprite bgR = player2.PlayerPepemon.CardBG;
+        Sprite bgB = player1.PlayerPepemon.CardBG;
+        string rN = player2.PlayerPepemon.DisplayName;
+        string bN = player1.PlayerPepemon.DisplayName;
+
+        _versusScreen.SetVersusScreen(imgR, imgB, bgB, bgR, bN, rN);
     }
 
     public void NewRoundDisplay()
@@ -100,8 +118,8 @@ public class UIController : MonoBehaviour
             yield return new WaitForSeconds(.2f);
             GameObject go = new GameObject("Card Container", typeof(RectTransform));
             GameObject card;
-            if (_whichPlayer == _player1) card = Instantiate(_cardPrefab, _deck1Transform.position, Quaternion.identity);
-            else card = Instantiate(_cardPrefab, _deck2Transform.position, Quaternion.identity);
+            if (_whichPlayer == _player1) card = Instantiate(_cardPrefab, _deck2Transform.position, Quaternion.identity);
+            else card = Instantiate(_cardPrefab, _deck1Transform.position, Quaternion.identity);
             card.transform.SetParent(_board);
 
 
@@ -113,12 +131,20 @@ public class UIController : MonoBehaviour
             card.GetComponent<CardController>().SetTargetTransform(go.transform);
             if (_whichPlayer == _player1) _player1Cards.Add(card.GetComponent<CardController>());
             else _player2Cards.Add(card.GetComponent<CardController>());
+
+            SFXManager.Instance.DealSFX();
         }
+    }
+
+    public void FlipCards(int attackIndex)
+    {
+        if(routine != null) StopCoroutine(routine);
+        routine = StartCoroutine(FlipCardsRoutine(attackIndex));
     }
 
 
     // disables cards based on attacking or defending
-    public void FlipCards(int attackIndex)
+    public IEnumerator FlipCardsRoutine(int attackIndex)
     {
         if (attackIndex == 1) // p1
         {
@@ -126,8 +152,10 @@ public class UIController : MonoBehaviour
             {
                 if (_player1Cards[i].HostedCard.IsAttackingCard() != false)
                 {
-                    _player1Cards[i].SetAttackingTransform(1);
+                    _player1Cards[i].SetAttackingTransform(new Vector3(0, 5f, 0));
                     _player1Cards[i].GetComponent<Image>().color = Color.gray;
+
+                    yield return new WaitForSeconds(0.3f);
                 }
             }
 
@@ -135,8 +163,10 @@ public class UIController : MonoBehaviour
             {
                 if (_player2Cards[i].HostedCard.IsAttackingCard() != true)
                 {
-                    _player2Cards[i].SetAttackingTransform(2);
+                    _player2Cards[i].SetAttackingTransform(new Vector3(0, 5f, 0));
                     _player2Cards[i].GetComponent<Image>().color = Color.gray;
+
+                    yield return new WaitForSeconds(0.3f);
                 }
             }
         }
@@ -146,9 +176,11 @@ public class UIController : MonoBehaviour
             {
                 if (_player2Cards[i].HostedCard.IsAttackingCard() != false)
                 {
-                    _player2Cards[i].SetAttackingTransform(2);
+                    _player2Cards[i].SetAttackingTransform(new Vector3(0, 5f, 0));
 
                     _player2Cards[i].GetComponent<Image>().color = Color.gray;
+
+                    yield return new WaitForSeconds(0.3f);
                 }
             }
 
@@ -156,9 +188,11 @@ public class UIController : MonoBehaviour
             {
                 if (_player1Cards[i].HostedCard.IsAttackingCard() != true)
                 {
-                    _player1Cards[i].SetAttackingTransform(1);
+                    _player1Cards[i].SetAttackingTransform(new Vector3(0, 5f, 0));
 
                     _player1Cards[i].GetComponent<Image>().color = Color.gray;
+
+                    yield return new WaitForSeconds(0.3f);
                 }
             }
         }
@@ -168,14 +202,18 @@ public class UIController : MonoBehaviour
             {
                 _player2Cards[i].ReturnToBaseTransform();
 
-                _player2Cards[i].GetComponent<Image>().color = Color.black;
+                _player2Cards[i].GetComponent<Image>().color = Color.gray;
+
+                yield return new WaitForSeconds(0.1f);
             }
 
             for (int i = 0; i < _player1Cards.Count; i++)
             {
                 _player1Cards[i].ReturnToBaseTransform();
 
-                _player1Cards[i].GetComponent<Image>().color = Color.black;
+                _player1Cards[i].GetComponent<Image>().color = Color.gray;
+
+                yield return new WaitForSeconds(0.1f);
             }
         }
 

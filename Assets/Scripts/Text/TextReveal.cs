@@ -42,12 +42,13 @@ public class TextReveal : MonoBehaviour
     public void SetText(string text)
     {
         _text = text;
+        _curText = text;
     }
 
     #region Text Reveal Logic
     private void Update()
     {
-        _curText = _text.Substring(0, Mathf.Min(Mathf.RoundToInt(_alpha / _threshold), _text.Length));
+        //_curText = _text.Substring(0, Mathf.Min(Mathf.RoundToInt(_alpha / _threshold), _text.Length));
         _tmpFore.SetText(_curText);
         
         if (_tmpShadow != null)

@@ -18,6 +18,7 @@ MonoBehaviour:
   DisplayName: Sairy
   CardContentBackdrop: {fileID: 21300000, guid: e34a00be268feaf44b4d38d86f7ccefc, type: 3}
   CardContent: {fileID: 21300000, guid: 7fe94b6de461a0849969f346afbb450e, type: 3}
+  CardBG: {fileID: 21300000, guid: 94f7611efffce1e459212ad8f4615cd1, type: 3}
   Level: 1
   Type: 5
   Weakness: 7
