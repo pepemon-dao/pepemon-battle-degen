@@ -5217,7 +5217,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 27, y: -346.00003}
+  m_AnchoredPosition: {x: 27.000122, y: -346.00003}
   m_SizeDelta: {x: 256, y: 128}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!95 &280390704
@@ -12353,7 +12353,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 314.99994, y: 185}
+  m_AnchoredPosition: {x: 315, y: 185}
   m_SizeDelta: {x: 156.4781, y: 58.1748}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &686266930
@@ -20338,7 +20338,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 334.49994, y: -191}
+  m_AnchoredPosition: {x: 334.5, y: -191}
   m_SizeDelta: {x: 117.476, y: 68.5735}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1108275608
@@ -26654,13 +26654,13 @@ MonoBehaviour:
       - 0x0EA739B3c290E6194d37ba579948794cA0662705
       - 0x0EA739B3c290E6194d37ba579948794cA0662705
       - 0x0EA739B3c290E6194d37ba579948794cA0662705
-    - chainId: 64165
-      chainName: Fantom Sonic Testnet
+    - chainId: 57054
+      chainName: Sonic Blaze Testnet
       chainCurrencyName: S
       chainCurrencySymbol: S
       chainCurrencyDecimals: 18
-      rpcUrl: https://rpc.testnet.soniclabs.com
-      blockExplorerUrl: 
+      rpcUrl: https://rpc.blaze.soniclabs.com
+      blockExplorerUrl: https://testnet.sonicscan.org/
       pepemonBattleAddress: 0xA9b7CDd6392952aDB259D823FEbd445Bb15c3aEA
       pepemonBattleAbi: '[{"inputs": [{"internalType": "address", "name": "_configAddress",
         "type": "address"}], "stateMutability": "nonpayable", "type": "constructor"},
@@ -27617,10 +27617,10 @@ MonoBehaviour:
       pepemonMatchmakerAddresses:
       - 0x4fB8b44149750e247A5Cde33DBc0aDC0FF38720a
       - 0xB36F1496196667C992D31467f1fdD96A990A02ef
-    defaultChainId: 64165
-    debugRpcUrl: https://rpc.testnet.soniclabs.com
+    defaultChainId: 57054
+    debugRpcUrl: https://rpc.blaze.soniclabs.com
     debugPrivateKey: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-    readOnlyRpcUrl: https://rpc.testnet.soniclabs.com
+    readOnlyRpcUrl: https://rpc.blaze.soniclabs.com
   onWalletConnected:
     m_PersistentCalls:
       m_Calls:
@@ -29095,9 +29095,9 @@ MonoBehaviour:
   - identifier: hardhat
     chainId: 31337
     rpcOverride: https://localhost:8545
-  - identifier: fantom-sonic-testnet
-    chainId: 64165
-    rpcOverride: https://rpc.testnet.soniclabs.com
+  - identifier: sonic-blaze-testnet
+    chainId: 57054
+    rpcOverride: https://rpc.blaze.soniclabs.com
   clientId: 2798514136b55fd11fc6fc94a1ccaec2
   initializeOnAwake: 1
   showDebugLogs: 1
